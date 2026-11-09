@@ -1,0 +1,49 @@
+name: Katabump Auto Renew
+
+on:
+  schedule:
+    # هر ۳ روز یک‌بار ساعت ۱۲ UTC
+    - cron: '0 12 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  renew-job:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: دریافت کدها
+        uses: actions/checkout@v4
+
+      - name: نصب پایتون
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: نصب ابزارها و مرورگر
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb x11-utils xdotool scrot fonts-noto-cjk
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          seleniumbase install chromedriver
+
+      - name: اجرای اسکریپت تمدید
+        env:
+          KATABUMP_EMAIL: ${{ secrets.KATABUMP_EMAIL }}
+          KATABUMP_PASSWORD: ${{ secrets.KATABUMP_PASSWORD }}
+          SERVER_ID: ${{ secrets.SERVER_ID }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          HEADLESS: "false"
+        run: |
+          xvfb-run --auto-servernum python3 app.py
+
+      - name: آپلود اسکرین‌شات‌ها
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: "*.png"
+          if-no-files-found: ignore
+          retention-days: 5
