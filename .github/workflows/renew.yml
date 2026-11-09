@@ -2,7 +2,7 @@ name: Katabump Auto Renew
 
 on:
   schedule:
-    # هر ۳ روز یک‌بار ساعت ۱۲ UTC
+    # هر  روز یک‌بار ساعت ۱۲ UTC
     - cron: '0 12 * * *'
   workflow_dispatch:
 
